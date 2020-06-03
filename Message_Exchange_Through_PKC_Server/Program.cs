@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 
 namespace Message_Exchange_Through_PKC_Server
 {
@@ -6,7 +7,8 @@ namespace Message_Exchange_Through_PKC_Server
 	{
 		static void Main(string[] args)
 		{
-			Console.WriteLine("Hello World!");
+			Server.RunServer(Directory.GetCurrentDirectory() + "\\server.pfx");
+			
 		}
 	}
 }
