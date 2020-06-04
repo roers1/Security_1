@@ -10,7 +10,7 @@ using System.IO;
 
 namespace Examples.System.Net
 {
-    public sealed class Program
+    public sealed class SslTcpServer
     {
         static X509Certificate serverCertificate = null;
         // The certificate parameter specifies the name of the file
@@ -43,7 +43,7 @@ namespace Examples.System.Net
 
 	        Console.WriteLine("Certificate error: {0}", sslPolicyErrors);
 
-	        // Do not allow this client to communicate with unauthenticated servers.
+	        // Do not allow this server to communicate with unauthenticated clients.
 	        return false;
         }
 
@@ -184,7 +184,7 @@ namespace Examples.System.Net
         public static int Main(string[] args)
         {
            string certificate = Directory.GetCurrentDirectory() + "\\server.pfx";
-            Program.RunServer (certificate);
+            SslTcpServer.RunServer (certificate);
             return 0;
         }
     }

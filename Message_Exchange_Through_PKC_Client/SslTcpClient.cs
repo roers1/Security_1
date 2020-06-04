@@ -10,7 +10,7 @@ using System.IO;
 
 namespace Examples.System.Net
 {
-    public class Program
+    public class SslTcpClient
     {
         private static Hashtable certificateErrors = new Hashtable();
 
@@ -120,7 +120,7 @@ namespace Examples.System.Net
             string serverCertificateName = "HP-Envy-Ruben";
             string machineName = "HP-Envy-Ruben";
            
-            Program.RunClient(machineName, serverCertificateName);
+            SslTcpClient.RunClient(machineName, serverCertificateName);
             return 0;
         }
     }
