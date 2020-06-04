@@ -3,9 +3,13 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 16
 VisualStudioVersion = 16.0.29905.134
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Message_Exchange_Through_PKC_Server", "Message_Exchange_Through_PKC_Server\Message_Exchange_Through_PKC_Server.csproj", "{E7BD8788-9A1D-48B4-92C9-67BFADF7F0DA}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Message_Exchange_Through_PKC_Server", "Message_Exchange_Through_PKC_Server\Message_Exchange_Through_PKC_Server.csproj", "{E7BD8788-9A1D-48B4-92C9-67BFADF7F0DA}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Message_Exchange_Through_PKC_Client", "Message_Exchange_Through_PKC_Client\Message_Exchange_Through_PKC_Client.csproj", "{938CA2E6-E506-47BC-A76B-F035A9992FEF}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Message_Exchange_Through_PKC_Client", "Message_Exchange_Through_PKC_Client\Message_Exchange_Through_PKC_Client.csproj", "{938CA2E6-E506-47BC-A76B-F035A9992FEF}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Message_Exchange_Through_PKC_Sequel_Client", "Message_Exchange_Through_PKC_Sequel_Client\Message_Exchange_Through_PKC_Sequel_Client.csproj", "{7C59567B-A919-4FDD-A2EC-496849F0B4E3}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Message_Exchange_Through_PKC_Sequel_Server", "Message_Exchange_Through_PKC_Sequel_Server\Message_Exchange_Through_PKC_Sequel_Server.csproj", "{80ADF30E-2BCD-4C65-978D-071A67C2B0CE}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -21,6 +25,14 @@ Global
 		{938CA2E6-E506-47BC-A76B-F035A9992FEF}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{938CA2E6-E506-47BC-A76B-F035A9992FEF}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{938CA2E6-E506-47BC-A76B-F035A9992FEF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7C59567B-A919-4FDD-A2EC-496849F0B4E3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7C59567B-A919-4FDD-A2EC-496849F0B4E3}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7C59567B-A919-4FDD-A2EC-496849F0B4E3}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7C59567B-A919-4FDD-A2EC-496849F0B4E3}.Release|Any CPU.Build.0 = Release|Any CPU
+		{80ADF30E-2BCD-4C65-978D-071A67C2B0CE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{80ADF30E-2BCD-4C65-978D-071A67C2B0CE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{80ADF30E-2BCD-4C65-978D-071A67C2B0CE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{80ADF30E-2BCD-4C65-978D-071A67C2B0CE}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
