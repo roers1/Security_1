@@ -13,15 +13,11 @@ namespace Message_Exchange_Through_PKC_Sequel_Client
 	public class SslTcpClient
 	{
 		private static Hashtable certificateErrors = new Hashtable();
-		private static X509Certificate2 localCertificate2 = null;
 
 		public static int Main(string[] args)
 		{
 			string serverCertificateName = "HP-Envy-Ruben";
 			string machineName = "HP-Envy-Ruben";
-
-			string certificate = Directory.GetCurrentDirectory() + "\\client.pfx";
-			localCertificate2 = new X509Certificate2(certificate, "secret");
 
 			SslTcpClient.RunClient(machineName, serverCertificateName);
 			return 0;
@@ -103,7 +99,29 @@ namespace Message_Exchange_Through_PKC_Sequel_Client
 				}
 			} while (bytes != 0);
 
-			return messageData.ToString();
+			messageData.Remove(messageData.Length - 5, 5);
+
+			var messageSplit = messageData.ToString().Split('-');
+
+			if (VerifyHash(SHA256.Create(), messageSplit[0], messageSplit[1]))
+			{
+				return messageSplit[0];
+			}
+			else
+			{
+				return "Message has been tampered with";
+			}
+		}
+
+		private static bool VerifyHash(HashAlgorithm hashAlgorithm, string input, string hash)
+		{
+			// Hash the input.
+			var hashOfInput = GetHash(hashAlgorithm, input);
+
+			// Create a StringComparer an compare the hashes.
+			StringComparer comparer = StringComparer.OrdinalIgnoreCase;
+
+			return comparer.Compare(hashOfInput, hash) == 0;
 		}
 
 		private static string GetHash(HashAlgorithm hashAlgorithm, string input)
