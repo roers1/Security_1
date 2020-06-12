@@ -16,13 +16,20 @@ namespace Message_Exchange_Through_PKC_Sequel_Server
 		public static int Main(string[] args)
 		{
 			TcpListener _server = new TcpListener(IPAddress.Any, 12345);
+
+			string certificateLocation = Directory.GetCurrentDirectory() + "\\certificates\\server.pfx";
+			X509Certificate2 certificateServer = new X509Certificate2(certificateLocation,"secret");
+
+			certificateLocation = Directory.GetCurrentDirectory() + "\\certificates\\client.pfx";
+			X509Certificate2 certificateClient = new X509Certificate2(certificateLocation, "secret");
+
 			_server.Start();
 
 			TcpClient client = _server.AcceptTcpClient();
 			NetworkStream stream = client.GetStream();
 
-			TcpReceiver receiver = new TcpReceiver(stream);
-			TcpSender sender = new TcpSender(stream);
+			TcpReceiver receiver = new TcpReceiver(stream,certificateClient,certificateServer);
+			TcpSender sender = new TcpSender(stream,certificateClient,certificateServer);
 
 			while(true){}
 			return 0;

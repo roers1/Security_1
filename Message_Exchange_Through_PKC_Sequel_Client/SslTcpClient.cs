@@ -13,18 +13,27 @@ namespace Message_Exchange_Through_PKC_Sequel_Client
 {
 	public class SslTcpClient
 	{
-		
 		public static int Main(String[] args)
 		{
 			TcpClient _client = new TcpClient();
+
+			string certificateLocation = Directory.GetCurrentDirectory() + "\\certificates\\server.pfx";
+			X509Certificate2 certificateServer = new X509Certificate2(certificateLocation, "secret");
+
+			certificateLocation = Directory.GetCurrentDirectory() + "\\certificates\\client.pfx";
+			X509Certificate2 certificateClient = new X509Certificate2(certificateLocation, "secret");
+
 			_client.Connect("HP-Envy-Ruben", 12345);
 
 			NetworkStream stream = _client.GetStream();
 
-			TcpReceiver receiver = new TcpReceiver(stream);
-			TcpSender sender = new TcpSender(stream);
+			TcpReceiver receiver = new TcpReceiver(stream,certificateClient,certificateServer);
+			TcpSender sender = new TcpSender(stream, certificateClient,certificateServer);
 
-			while (true) { }
+			while (true)
+			{
+			}
+
 			return 0;
 		}
 	}

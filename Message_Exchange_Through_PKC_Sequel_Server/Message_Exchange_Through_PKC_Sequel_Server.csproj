@@ -6,10 +6,13 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <None Update="server.crt">
+    <None Update="certificates\client.pfx">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Update="server.pfx">
+    <None Update="certificates\server.crt">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="certificates\server.pfx">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
   </ItemGroup>
