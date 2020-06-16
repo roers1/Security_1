@@ -27,17 +27,11 @@ namespace Message_Exchange_Through_PKC_Sequel_Server
 				{
 					Console.WriteLine("Enter message to send to the client: ");
 					string message = Console.ReadLine();
+					
 
-					string hashedMessage = GetHash(SHA256.Create(), message);
+					var data = Encoding.ASCII.GetBytes(message);
 
-					var signedHash = Sign(Encoding.ASCII.GetBytes(hashedMessage),certificateServer);
-					var signedHashString = Encoding.ASCII.GetString(signedHash);
-
-					var data = new[] {message, signedHashString};
-
-					var byt = ToByteArray(data);
-
-					stream.Write(byt);
+					stream.Write(data);
 				}
 			}
 			catch (SocketException e)

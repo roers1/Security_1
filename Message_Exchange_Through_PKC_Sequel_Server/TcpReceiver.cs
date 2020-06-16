@@ -34,24 +34,8 @@ namespace Message_Exchange_Through_PKC_Sequel_Server
 						while ((i = stream.Read(bytes, 0, bytes.Length)) != 0)
 						{
 							// Translate data bytes to a ASCII string.
-
 							data = System.Text.Encoding.ASCII.GetString(bytes, 0, i);
-							var byteMessage = System.Text.Encoding.ASCII.GetBytes(data);
-
-							var receivedMessage = FromByteArray(byteMessage);
-
-							var decryptedHash = Decrypt(Encoding.ASCII.GetBytes(receivedMessage[1]), certificateClient);
-
-							if (VerifyHash(SHA256.Create(), receivedMessage[0], decryptedHash))
-							{
-								Console.WriteLine("Received: {0}", receivedMessage[0]);
-							}
-							else
-							{
-								Console.WriteLine("MESSAGE HAS BEEN TAMPERED WITH");
-							}
-
-							;
+							Console.WriteLine("Received: {0}", data);
 						}
 					}
 				}
