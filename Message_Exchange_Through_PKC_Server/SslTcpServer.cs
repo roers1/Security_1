@@ -18,7 +18,7 @@ namespace Examples.System.Net
         public static void RunServer(string certificate)
         {
             serverCertificate = new X509Certificate(certificate,"secret");
-
+            
             // Create a TCP/IP (IPv4) socket and listen for incoming connections.
             TcpListener listener = new TcpListener(IPAddress.Any, 8080);
             listener.Start();

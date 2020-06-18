@@ -6,6 +6,13 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Newtonsoft.Json" Version="12.0.3" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="certificates\client.crt">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
     <None Update="certificates\client.pfx">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>

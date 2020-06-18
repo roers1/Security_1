@@ -9,9 +9,9 @@ using System.Threading;
 
 namespace Message_Exchange_Through_PKC_Sequel_Client
 {
-	sealed class TcpReceiver
+	sealed class TcpReceiverClient
 	{
-		public TcpReceiver(NetworkStream stream, X509Certificate2 certificateClient, X509Certificate2 certificateServer)
+		public TcpReceiverClient(NetworkStream stream, X509Certificate2 certificateClient, X509Certificate2 certificateServer)
 		{
 			Thread receiveThread = new Thread(() => Receive(stream, certificateClient, certificateServer));
 			receiveThread.Start();

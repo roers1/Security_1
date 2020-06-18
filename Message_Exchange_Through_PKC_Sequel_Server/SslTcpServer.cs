@@ -20,7 +20,7 @@ namespace Message_Exchange_Through_PKC_Sequel_Server
 			string certificateLocation = Directory.GetCurrentDirectory() + "\\certificates\\server.pfx";
 			X509Certificate2 certificateServer = new X509Certificate2(certificateLocation,"secret");
 
-			certificateLocation = Directory.GetCurrentDirectory() + "\\certificates\\client.pfx";
+			certificateLocation = Directory.GetCurrentDirectory() + "\\certificates\\client.crt";
 			X509Certificate2 certificateClient = new X509Certificate2(certificateLocation, "secret");
 
 			_server.Start();

@@ -27,8 +27,10 @@ namespace Message_Exchange_Through_PKC_Sequel_Client
 
 			NetworkStream stream = _client.GetStream();
 
-			TcpReceiver receiver = new TcpReceiver(stream,certificateClient,certificateServer);
-			TcpSender sender = new TcpSender(stream, certificateClient,certificateServer);
+			TcpReceiverClient receiver = new TcpReceiverClient(stream,certificateClient,certificateServer);
+			TcpSenderClient sender = new TcpSenderClient(stream, certificateClient,certificateServer);
+
+			Console.Title = "Client";
 
 			while (true)
 			{
