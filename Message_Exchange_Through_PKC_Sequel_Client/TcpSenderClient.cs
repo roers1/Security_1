@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Net.Sockets;
+using System.Runtime.ConstrainedExecution;
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
@@ -12,7 +13,8 @@ namespace Message_Exchange_Through_PKC_Sequel_Client
 {
 	sealed class TcpSenderClient
 	{
-		public TcpSenderClient(NetworkStream stream, X509Certificate2 certificateClient, X509Certificate2 certificateServer)
+		public TcpSenderClient(NetworkStream stream, X509Certificate2 certificateClient,
+			X509Certificate2 certificateServer)
 		{
 			Thread sendThread = new Thread(() => Send(stream, certificateServer, certificateClient));
 			sendThread.Start();
@@ -27,47 +29,48 @@ namespace Message_Exchange_Through_PKC_Sequel_Client
 				{
 					//Inlezen van het te verzenden bericht
 					Console.WriteLine("Enter message to send to the server: ");
-					string message = Console.ReadLine();
+					string plainMessage = Console.ReadLine();
 
 					//Hashen en signen
-					byte[] dataToHashAndEncrypt = Encoding.UTF8.GetBytes(message);
-					byte[] encryptedHashMessage = SignMessage(dataToHashAndEncrypt,certificateClient);
+					byte[] plainMessageInBytes = Encoding.UTF8.GetBytes(plainMessage);
+					string signedHashMessage =
+						Convert.ToBase64String(SignMessage(plainMessageInBytes, certificateClient));
 
-					var encryptionToSend = Convert.ToBase64String(encryptedHashMessage);
 
-					JObject jsonObject = new JObject
+					//Te versturen asymetrische encryptie in een object zetten
+					JObject asymmetricalEncryption = new JObject
 					{
-						{ "message", message },
-						{ "hash", encryptionToSend }
+						{"message", plainMessage},
+						{"hash", signedHashMessage}
 					};
 
 					byte[] encryptedData;
 					byte[] encryptedKey;
-					
+
 					using (Aes myAes = Aes.Create())
 					{
 						// Encrypt the string to an array of bytes.
-						encryptedData = EncryptStringToBytes_Aes(jsonObject.ToString(), myAes.Key, myAes.IV);
+						encryptedData = EncryptStringToBytes_Aes(asymmetricalEncryption.ToString(), myAes.Key, myAes.IV);
 
+						//Symmetrische sleuter in een object zetten
 						JObject symmetricalKey = new JObject
 						{
 							{"myAesKey", Convert.ToBase64String(myAes.Key)},
 							{"myAesIV", Convert.ToBase64String(myAes.IV)}
 						};
 
-						byte[] symmetricalKeyByte = Encoding.UTF8.GetBytes(symmetricalKey.ToString());
-
-						encryptedKey = Encrypt(symmetricalKeyByte, certificateServer);
-
+						//versleutelen van de symmetrische sleutel
+						encryptedKey = Encrypt(Encoding.UTF8.GetBytes(symmetricalKey.ToString()), certificateServer);
 					}
 
-					JObject data = new JObject
+					//Versleutelde asymmetrische encryptie en bijbehorende symmetrische sleutel
+					JObject symmetricalEncryption = new JObject
 					{
 						{"encryptedData", encryptedData},
 						{"encryptedKey", encryptedKey}
 					};
 
-					stream.Write(Encoding.UTF8.GetBytes(data.ToString()));
+					stream.Write(Encoding.UTF8.GetBytes(symmetricalEncryption.ToString()));
 				}
 			}
 			catch (SocketException e)
@@ -76,7 +79,7 @@ namespace Message_Exchange_Through_PKC_Sequel_Client
 			}
 		}
 
-		private static byte[] Encrypt(byte[] symmetricalKey,X509Certificate2 certificate)
+		private static byte[] Encrypt(byte[] symmetricalKey, X509Certificate2 certificate)
 		{
 			RSA publickey = certificate.GetRSAPublicKey();
 			return publickey.Encrypt(symmetricalKey, RSAEncryptionPadding.Pkcs1);
@@ -119,6 +122,7 @@ namespace Message_Exchange_Through_PKC_Sequel_Client
 							//Write all data to the stream.
 							swEncrypt.Write(plainText);
 						}
+
 						encrypted = msEncrypt.ToArray();
 					}
 				}

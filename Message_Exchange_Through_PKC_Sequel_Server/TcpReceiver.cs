@@ -35,37 +35,33 @@ namespace Message_Exchange_Through_PKC_Sequel_Server
 						while ((i = stream.Read(bytes, 0, bytes.Length)) != 0)
 						{
 							// Translate data bytes to a ASCII string.
-							string jsonString = Encoding.UTF8.GetString(bytes);
+							string receivedData = Encoding.UTF8.GetString(bytes);
 
-							JObject json = JObject.Parse(jsonString);
+							JObject symmetricalEncryption = JObject.Parse(receivedData);
 
-							byte[] encryptedData = (byte[]) json.GetValue("encryptedData");
-							byte[] encryptedKey = (byte[]) json.GetValue("encryptedKey");
+							byte[] encryptedData = (byte[]) symmetricalEncryption.GetValue("encryptedData");
+							byte[] encryptedKey = (byte[]) symmetricalEncryption.GetValue("encryptedKey");
 
-							string encryptedKeyString =
-								Encoding.UTF8.GetString(Decrypt(encryptedKey, certificateServer));
+							JObject symmetricalKey = JObject.Parse(Encoding.UTF8.GetString(Decrypt(encryptedKey, certificateServer)));
 
-							JObject encryptedKeyJson = JObject.Parse(encryptedKeyString);
-
-
-							string message1 = DecryptStringFromBytes_Aes(encryptedData, Convert.FromBase64String(encryptedKeyJson.GetValue("myAesKey").ToString()),
-								Convert.FromBase64String(encryptedKeyJson.GetValue("myAesIV").ToString()));
+							string asymmetricalEncryptionString = DecryptStringFromBytes_Aes(encryptedData, Convert.FromBase64String(symmetricalKey.GetValue("myAesKey").ToString()),
+								Convert.FromBase64String(symmetricalKey.GetValue("myAesIV").ToString()));
 
 
-							JObject json1 = JObject.Parse(message1);
+							JObject asymmetricalEncryption = JObject.Parse(asymmetricalEncryptionString);
 
-							string message = json1.GetValue("message").ToString();
-							string signedData = json1.GetValue("hash").ToString();
+							string plainMessage = asymmetricalEncryption.GetValue("message").ToString(); //test
+							string signedHashMessage = asymmetricalEncryption.GetValue("hash").ToString(); //signedhash van test
 
-
+							//hash van de plainmessage aanmaken
 							SHA256Managed sha256Managed = new SHA256Managed();
-							var hashOfPlainMessage = sha256Managed.ComputeHash(Encoding.UTF8.GetBytes(message));
+							byte[] hashOfPlainMessage = sha256Managed.ComputeHash(Encoding.UTF8.GetBytes(plainMessage));
 
-							var x = Verify(hashOfPlainMessage, Convert.FromBase64String(signedData), certificateClient);
+							bool validMessage = Verify(hashOfPlainMessage, Convert.FromBase64String(signedHashMessage), certificateClient);
 
-							if (x)
+							if (validMessage)
 							{
-								Console.WriteLine(message);
+								Console.WriteLine(plainMessage);
 							}
 							else
 							{

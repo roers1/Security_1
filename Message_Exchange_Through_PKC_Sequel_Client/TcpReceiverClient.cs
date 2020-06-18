@@ -6,6 +6,7 @@ using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Threading;
+using Newtonsoft.Json.Linq;
 
 namespace Message_Exchange_Through_PKC_Sequel_Client
 {
@@ -20,7 +21,7 @@ namespace Message_Exchange_Through_PKC_Sequel_Client
 		private static void Receive(NetworkStream stream, X509Certificate2 certificateClient,
 			X509Certificate2 certificateServer)
 		{
-			Byte[] bytes = new Byte[256];
+			Byte[] bytes = new Byte[4096];
 			string data = null;
 			try
 			{
@@ -31,9 +32,39 @@ namespace Message_Exchange_Through_PKC_Sequel_Client
 						int i;
 						while ((i = stream.Read(bytes, 0, bytes.Length)) != 0)
 						{
-							data = System.Text.Encoding.ASCII.GetString(bytes, 0, i);
+							// Translate data bytes to a ASCII string.
+							string receivedData = Encoding.UTF8.GetString(bytes);
 
-							Console.WriteLine("Received: {0}", data);
+							JObject symmetricalEncryption = JObject.Parse(receivedData);
+
+							byte[] encryptedData = (byte[])symmetricalEncryption.GetValue("encryptedData");
+							byte[] encryptedKey = (byte[])symmetricalEncryption.GetValue("encryptedKey");
+
+							JObject symmetricalKey = JObject.Parse(Encoding.UTF8.GetString(Decrypt(encryptedKey, certificateClient)));
+
+							string asymmetricalEncryptionString = DecryptStringFromBytes_Aes(encryptedData, Convert.FromBase64String(symmetricalKey.GetValue("myAesKey").ToString()),
+								Convert.FromBase64String(symmetricalKey.GetValue("myAesIV").ToString()));
+
+
+							JObject asymmetricalEncryption = JObject.Parse(asymmetricalEncryptionString);
+
+							string plainMessage = asymmetricalEncryption.GetValue("message").ToString();
+							string signedHashMessage = asymmetricalEncryption.GetValue("hash").ToString();
+
+
+							SHA256Managed sha256Managed = new SHA256Managed();
+							byte[] hashOfPlainMessage = sha256Managed.ComputeHash(Encoding.UTF8.GetBytes(plainMessage));
+
+							bool validMessage = Verify(hashOfPlainMessage, Convert.FromBase64String(signedHashMessage), certificateServer);
+
+							if (validMessage)
+							{
+								Console.WriteLine(plainMessage);
+							}
+							else
+							{
+								Console.WriteLine("Hashes don't compare");
+							}
 						}
 					}
 				}
@@ -44,60 +75,61 @@ namespace Message_Exchange_Through_PKC_Sequel_Client
 			}
 		}
 
-		private static string[] FromByteArray(byte[] input)
+		private static byte[] Decrypt(byte[] encryptedkey, X509Certificate2 certificate)
 		{
-			using (var stream = new MemoryStream(input))
-			using (var reader = new BinaryReader(stream, Encoding.UTF8))
-			{
-				var rows = reader.ReadInt32();
-				var result = new string[rows];
-				for (int i = 0; i < rows; i++)
-				{
-					result[i] = reader.ReadString();
-				}
+			RSA privateKey = certificate.GetRSAPrivateKey();
 
-				return result;
-			}
+			return privateKey.Decrypt(encryptedkey, RSAEncryptionPadding.Pkcs1);
 		}
 
-		private static string Decrypt(byte[] data, X509Certificate2 certificate)
+		private static bool Verify(byte[] hashOfPlainMessage, byte[] signedData, X509Certificate2 certificate)
 		{
 			RSA publicKey = certificate.GetRSAPublicKey();
 
-			var decryptedData = publicKey.Decrypt(data, RSAEncryptionPadding.Pkcs1);
-
-			return Encoding.ASCII.GetString(decryptedData);
+			return publicKey.VerifyHash(hashOfPlainMessage, signedData, HashAlgorithmName.SHA256,
+				RSASignaturePadding.Pkcs1);
 		}
 
-		private static string GetHash(HashAlgorithm hashAlgorithm, string input)
+		static string DecryptStringFromBytes_Aes(byte[] cipherText, byte[] Key, byte[] IV)
 		{
-			// Convert the input string to a byte array and compute the hash.
-			byte[] data = hashAlgorithm.ComputeHash(Encoding.UTF8.GetBytes(input));
+			// Check arguments.
+			if (cipherText == null || cipherText.Length <= 0)
+				throw new ArgumentNullException("cipherText");
+			if (Key == null || Key.Length <= 0)
+				throw new ArgumentNullException("Key");
+			if (IV == null || IV.Length <= 0)
+				throw new ArgumentNullException("IV");
 
-			// Create a new Stringbuilder to collect the bytes
-			// and create a string.
-			var sBuilder = new StringBuilder();
+			// Declare the string used to hold
+			// the decrypted text.
+			string plaintext = null;
 
-			// Loop through each byte of the hashed data
-			// and format each one as a hexadecimal string.
-			for (int i = 0; i < data.Length; i++)
+			// Create an Aes object
+			// with the specified key and IV.
+			using (Aes aesAlg = Aes.Create())
 			{
-				sBuilder.Append(data[i].ToString("x2"));
+				aesAlg.Key = Key;
+				aesAlg.IV = IV;
+
+				// Create a decryptor to perform the stream transform.
+				ICryptoTransform decryptor = aesAlg.CreateDecryptor(aesAlg.Key, aesAlg.IV);
+
+				// Create the streams used for decryption.
+				using (MemoryStream msDecrypt = new MemoryStream(cipherText))
+				{
+					using (CryptoStream csDecrypt = new CryptoStream(msDecrypt, decryptor, CryptoStreamMode.Read))
+					{
+						using (StreamReader srDecrypt = new StreamReader(csDecrypt))
+						{
+							// Read the decrypted bytes from the decrypting stream
+							// and place them in a string.
+							plaintext = srDecrypt.ReadToEnd();
+						}
+					}
+				}
 			}
 
-			// Return the hexadecimal string.
-			return sBuilder.ToString();
-		}
-
-		private static bool VerifyHash(HashAlgorithm hashAlgorithm, string input, string hash)
-		{
-			// Hash the input.
-			var hashOfInput = GetHash(hashAlgorithm, input);
-
-			// Create a StringComparer an compare the hashes.
-			StringComparer comparer = StringComparer.OrdinalIgnoreCase;
-
-			return comparer.Compare(hashOfInput, hash) == 0;
+			return plaintext;
 		}
 	}
 }
